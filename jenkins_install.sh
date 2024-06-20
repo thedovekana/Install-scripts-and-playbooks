@@ -23,7 +23,7 @@ echo "#######  Add required dependencies for the jenkins package ########"
 
 #amazon-linux-extras install java-openjdk11 -y  ### for Amazon Linux system
 
-sudo yum install java-11-openjdk -y ### for others redhat systems
+sudo yum install java-17-openjdk -y ### for others redhat systems
 
 
 echo "######## Install jenkins ##########"

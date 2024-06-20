@@ -4,19 +4,18 @@ echo "#############################################
      # DOCKER INSTALLATION SCRIPT FOR CENTOS OS   #
       #############################################"
 
+echo "########## udpate the repo ##########"
+
 sudo yum update -y
 
-echo "#### Install the Dependencies #####"
+echo "########## Set up the repository #############"
 
-sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-
-echo "##### Add the Docker Repository to CentOS #####"
-
+sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-echo "#### Install Docker On CentOS Using Yum ####"
+echo "########## Install Docker Engine #######"
 
-sudo yum install docker -y 
+sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 echo "#### Manage Docker Service #####"
 
