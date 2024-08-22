@@ -1,43 +1,71 @@
-#! /bin/bash
+#!/bin/bash
 
+set -e  # Arrête le script si une commande échoue
 
-echo "#############################################
-# JENKINS INSTALLATION SCRIPT FOR REDHAT OS #
-#############################################"
+echo "#############################################"
+echo "# JENKINS INSTALLATION SCRIPT FOR LINUX OS  #"
+echo "#############################################"
 
-sudo yum update -y
+# Détecter la distribution
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+else
+    echo "Unsupported OS. Exiting."
+    exit 1
+fi
 
-echo "####### Add Jenkins Repository ######"
+# Mise à jour des paquets existants
+echo "##### Updating system packages #####"
+if [[ "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "fedora" ]]; then
+    sudo yum update -y
+elif [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    sudo apt update -y && sudo apt upgrade -y
+else
+    echo "Unsupported OS: $OS. Exiting."
+    exit 1
+fi
 
-sudo wget -O /etc/yum.repos.d/jenkins.repo \
-    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+echo "####### Adding Jenkins Repository ######"
 
-echo "###### Import the Jenkins Repository GPG Key ######"
+# Télécharger le fichier repo Jenkins
+JENKINS_REPO_URL="https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+if [[ "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "fedora" ]]; then
+    sudo curl -fsSL $JENKINS_REPO_URL -o /etc/yum.repos.d/jenkins.repo || sudo wget -O /etc/yum.repos.d/jenkins.repo $JENKINS_REPO_URL
+    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+elif [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+    sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+    sudo apt update -y
+fi
 
+echo "####### Installing Java ######"
 
-sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+# Installer Java selon la distribution
+if [[ "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "fedora" ]]; then
+    sudo yum install java-17-openjdk -y
+elif [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    sudo apt install openjdk-17-jdk -y
+fi
 
+echo "####### Installing Jenkins ######"
 
-echo "#######  Add required dependencies for the jenkins package ########"
+# Installer Jenkins selon la distribution
+if [[ "$OS" == "centos" || "$OS" == "rhel" || "$OS" == "fedora" ]]; then
+    sudo yum install jenkins -y
+elif [[ "$OS" == "ubuntu" || "$OS" == "debian" ]]; then
+    sudo apt install jenkins -y
+fi
 
+echo "####### Starting and Enabling Jenkins ######"
 
-#amazon-linux-extras install java-openjdk11 -y  ### for Amazon Linux system
-
-sudo yum install java-17-openjdk -y ### for others redhat systems
-
-
-echo "######## Install jenkins ##########"
-
-
-sudo yum install jenkins -y 
-
-
+# Démarrer et activer Jenkins au démarrage
 sudo systemctl daemon-reload
-
 sudo systemctl enable jenkins
-
 sudo systemctl start jenkins
 
+# Vérifier le statut de Jenkins
 sudo systemctl status jenkins
 
+echo "Jenkins installation completed successfully."
 

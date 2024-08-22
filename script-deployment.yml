@@ -1,0 +1,184 @@
+#### Ce playbook permet de déployer l'ensemble des services definis via des scripts shell #####
+---
+- name: Deploy and configure services
+  hosts: all
+  become: yes
+  vars:
+    services:
+      - docker
+      - jenkins
+      - ansible
+      - memcached
+      - rabbitmq
+      - tomcat
+      - haproxy
+      - apache
+      - mysql
+      - mariadb
+      - nginx
+
+#### La tâche d'exécution du script d'installation de Docker #####
+  tasks:
+    - name: Install Docker
+      when: "'docker' in services"
+      tags: docker
+      block:
+        - name: Copy Docker installation script
+          copy:
+            src: install_docker.sh
+            dest: /tmp/install_docker.sh
+            mode: '0755'
+
+        - name: Run Docker installation script
+          command: /tmp/install_docker.sh
+
+#### La tâche d'exécution du script d'installation de Jenkins #####
+
+    - name: Install Jenkins
+      when: "'jenkins' in services"
+      tags: jenkins
+      block:
+        - name: Copy Jenkins installation script
+          copy:
+            src: install_jenkins.sh
+            dest: /tmp/install_jenkins.sh
+            mode: '0755'
+
+        - name: Run Jenkins installation script
+          command: /tmp/install_jenkins.sh
+
+#### La tâche d'exécution du script d'installation de Ansible #####
+
+    - name: Install Ansible
+      when: "'ansible' in services"
+      tags: ansible
+      block:
+        - name: Copy Ansible installation script
+          copy:
+            src: install_ansible.sh
+            dest: /tmp/install_ansible.sh
+            mode: '0755'
+
+        - name: Run Ansible installation script
+          command: /tmp/install_ansible.sh
+
+#### La tâche d'exécution du script d'installation de Memcached #####
+
+    - name: Install Memcached
+      when: "'memcached' in services"
+      tags: memcached
+      block:
+        - name: Copy Memcached installation script
+          copy:
+            src: install_memcached.sh
+            dest: /tmp/install_memcached.sh
+            mode: '0755'
+
+        - name: Run Memcached installation script
+          command: /tmp/install_memcached.sh
+
+#### La tâche d'exécution du script d'installation de RabbitMQ #####
+
+    - name: Install RabbitMQ
+      when: "'rabbitmq' in services"
+      tags: rabbitmq
+      block:
+        - name: Copy RabbitMQ installation script
+          copy:
+            src: install_rabbitmq.sh
+            dest: /tmp/install_rabbitmq.sh
+            mode: '0755'
+
+        - name: Run RabbitMQ installation script
+          command: /tmp/install_rabbitmq.sh
+
+#### La tâche d'exécution du script d'installation de Tomcat #####
+
+    - name: Install Tomcat
+      when: "'tomcat' in services"
+      tags: tomcat
+      block:
+        - name: Copy Tomcat installation script
+          copy:
+            src: install_tomcat.sh
+            dest: /tmp/install_tomcat.sh
+            mode: '0755'
+
+        - name: Run Tomcat installation script
+          command: /tmp/install_tomcat.sh
+
+#### La tâche d'exécution du script d'installation de HAProxy #####
+
+    - name: Install HAProxy
+      when: "'haproxy' in services"
+      tags: haproxy
+      block:
+        - name: Copy HAProxy installation script
+          copy:
+            src: install_haproxy.sh
+            dest: /tmp/install_haproxy.sh
+            mode: '0755'
+
+        - name: Run HAProxy installation script
+          command: /tmp/install_haproxy.sh
+
+#### La tâche d'exécution du script d'installation de Apache #####
+
+    - name: Install Apache
+      when: "'apache' in services"
+      tags: apache
+      block:
+        - name: Copy Apache installation script
+          copy:
+            src: install_apache.sh
+            dest: /tmp/install_apache.sh
+            mode: '0755'
+
+        - name: Run Apache installation script
+          command: /tmp/install_apache.sh
+
+
+#### La tâche d'exécution du script d'installation de MySQL #####
+ 
+    - name: Install MySQL
+      when: "'mysql' in services"
+      tags: mysql
+      block:
+        - name: Copy MySQL installation script
+          copy:
+            src: install_mysql.sh
+            dest: /tmp/install_mysql.sh
+            mode: '0755'
+
+        - name: Run MySQL installation script
+          command: /tmp/install_mysql.sh
+
+#### La tâche d'exécution du script d'installation de MariaDB #####
+
+    - name: Install MariaDB
+      when: "'mariadb' in services"
+      tags: mariadb
+      block:
+        - name: Copy MariaDB installation script
+          copy:
+            src: install_mariadb.sh
+            dest: /tmp/install_mariadb.sh
+            mode: '0755'
+
+        - name: Run MariaDB installation script
+          command: /tmp/install_mariadb.sh
+
+#### La tâche d'exécution du script d'installation de Nginx #####
+
+    - name: Install Nginx
+      when: "'nginx' in services"
+      tags: nginx
+      block:
+        - name: Copy Nginx installation script
+          copy:
+            src: install_nginx.sh
+            dest: /tmp/install_nginx.sh
+            mode: '0755'
+
+        - name: Run Nginx installation script
+          command: /tmp/install_nginx.sh

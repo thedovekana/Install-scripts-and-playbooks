@@ -1,49 +1,128 @@
-#! /bin/bash
+#!/bin/bash
 
-TOMURL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz"
-dnf -y install java-11-openjdk java-11-openjdk-devel
-dnf install git maven wget -y
-cd /tmp/
-wget $TOMURL -O tomcatbin.tar.gz
-EXTOUT=`tar xzvf tomcatbin.tar.gz`
-TOMDIR=`echo $EXTOUT | cut -d '/' -f1`
-useradd --shell /sbin/nologin tomcat
-rsync -avzh /tmp/$TOMDIR/ /usr/local/tomcat/
-chown -R tomcat.tomcat /usr/local/tomcat
+echo "#############################################
+# TOMCAT INSTALLATION & CONFIGURATION SCRIPT FOR LINUX OS #
+#############################################"
 
-rm -rf /etc/systemd/system/tomcat.service
+# Fonction pour configurer Tomcat sur CentOS/RHEL
+setup_tomcat_centos() {
+    sudo yum update -y
+    sudo yum install epel-release -y
+    sudo yum install git zip unzip wget -y
 
-cat <<EOT>> /etc/systemd/system/tomcat.service
+    # Télécharger Tomcat
+    TOMCAT_VERSION="10.1.15"  # Remplacez par la version souhaitée
+    wget https://downloads.apache.org/tomcat/tomcat-10/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
+
+    # Décompresser et installer Tomcat
+    sudo tar xzf apache-tomcat-$TOMCAT_VERSION.tar.gz -C /opt
+    sudo ln -s /opt/apache-tomcat-$TOMCAT_VERSION /opt/tomcat
+
+    # Créer un utilisateur pour Tomcat
+    sudo useradd -r -s /sbin/nologin tomcat
+    sudo chown -R tomcat:tomcat /opt/apache-tomcat-$TOMCAT_VERSION
+
+    # Créer un fichier de service Systemd pour Tomcat
+    cat <<EOL | sudo tee /etc/systemd/system/tomcat.service
 [Unit]
-Description=Tomcat
+Description=Apache Tomcat Web Application Container
 After=network.target
 
 [Service]
-
+Type=forking
 User=tomcat
 Group=tomcat
-
-WorkingDirectory=/usr/local/tomcat
-
-#Environment=JRE_HOME=/usr/lib/jvm/jre
-Environment=JAVA_HOME=/usr/lib/jvm/jre
-
-Environment=CATALINA_PID=/var/tomcat/%i/run/tomcat.pid
-Environment=CATALINA_HOME=/usr/local/tomcat
-Environment=CATALINE_BASE=/usr/local/tomcat
-
-ExecStart=/usr/local/tomcat/bin/catalina.sh run
-ExecStop=/usr/local/tomcat/bin/shutdown.sh
-
-
-RestartSec=10
-Restart=always
+Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+Environment="CATALINA_HOME=/opt/tomcat"
+Environment="CATALINA_BASE=/opt/tomcat"
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+EOL
 
-EOT
+    # Recharger les fichiers de service Systemd et démarrer Tomcat
+    sudo systemctl daemon-reload
+    sudo systemctl start tomcat
+    sudo systemctl enable tomcat
+}
 
-systemctl daemon-reload
-systemctl start tomcat
-systemctl enable tomcat
+# Fonction pour configurer Tomcat sur Ubuntu/Debian
+setup_tomcat_ubuntu() {
+    sudo apt-get update -y
+    sudo apt-get install -y git zip unzip wget
+
+    # Télécharger Tomcat
+    TOMCAT_VERSION="10.1.15"  # Remplacez par la version souhaitée
+    wget https://downloads.apache.org/tomcat/tomcat-10/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
+
+    # Décompresser et installer Tomcat
+    sudo tar xzf apache-tomcat-$TOMCAT_VERSION.tar.gz -C /opt
+    sudo ln -s /opt/apache-tomcat-$TOMCAT_VERSION /opt/tomcat
+
+    # Créer un utilisateur pour Tomcat
+    sudo useradd -r -s /sbin/nologin tomcat
+    sudo chown -R tomcat:tomcat /opt/apache-tomcat-$TOMCAT_VERSION
+
+    # Créer un fichier de service Systemd pour Tomcat
+    cat <<EOL | sudo tee /etc/systemd/system/tomcat.service
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+User=tomcat
+Group=tomcat
+Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+Environment="CATALINA_HOME=/opt/tomcat"
+Environment="CATALINA_BASE=/opt/tomcat"
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    # Recharger les fichiers de service Systemd et démarrer Tomcat
+    sudo systemctl daemon-reload
+    sudo systemctl start tomcat
+    sudo systemctl enable tomcat
+}
+
+# Fonction pour détecter le système d'exploitation
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$ID
+    elif [ -f /etc/redhat-release ]; then
+        OS="centos"
+    else
+        echo "Système d'exploitation non supporté"
+        exit 1
+    fi
+}
+
+# Détection du système d'exploitation
+detect_os
+
+# Configuration de Tomcat en fonction du système d'exploitation
+case "$OS" in
+    ubuntu|debian)
+        setup_tomcat_ubuntu
+        ;;
+    centos|rhel)
+        setup_tomcat_centos
+        ;;
+    *)
+        echo "Système d'exploitation non supporté"
+        exit 1
+        ;;
+esac
+
+echo "Configuration terminée."
+
+
