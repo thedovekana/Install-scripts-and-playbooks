@@ -1,6 +1,6 @@
 scripts_shell-et-playbooks
 
-Ce repo est répertorie des scripts shell, ansible(playbooks), terraform et docker-compose pour des déploiements rapides.
+Ce repo répertorie des scripts shell, ansible(playbooks), terraform et docker-compose pour des déploiements rapides.
 
 ## Explication du playbook du repo
 
